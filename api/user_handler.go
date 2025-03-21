@@ -2,17 +2,32 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/qppffod/hotel-api/db"
 	"github.com/qppffod/hotel-api/types"
 )
 
 type UserHandler struct {
+	userStore db.UserStore
 }
 
-func HandleGetUser(c *fiber.Ctx) error {
-	return c.JSON(map[string]string{"message": c.Params("id")})
+func NewUserHandler(userStore db.UserStore) *UserHandler {
+	return &UserHandler{
+		userStore: userStore,
+	}
 }
 
-func HandleGetUsers(c *fiber.Ctx) error {
+func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	user, err := h.userStore.GetUserByID(c.Context(), id)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(*user)
+}
+
+func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
 	u := types.User{
 		ID:        "1",
 		FirstName: "James",
