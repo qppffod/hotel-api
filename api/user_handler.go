@@ -1,9 +1,12 @@
 package api
 
 import (
+	"errors"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/qppffod/hotel-api/db"
 	"github.com/qppffod/hotel-api/types"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserHandler struct {
@@ -16,11 +19,41 @@ func NewUserHandler(userStore db.UserStore) *UserHandler {
 	}
 }
 
+func (h *UserHandler) HandlePutUser(c *fiber.Ctx) error {
+	var (
+		id     = c.Params("id")
+		params types.UpdateUserParams
+	)
+
+	if err := c.BodyParser(&params); err != nil {
+		return err
+	}
+
+	if err := h.userStore.UpdateUser(c.Context(), id, &params); err != nil {
+		return err
+	}
+
+	return c.JSON(map[string]string{"updated": id})
+}
+
+func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	if err := h.userStore.DeleteUser(c.Context(), id); err != nil {
+		return err
+	}
+
+	return c.JSON(map[string]string{"deleted": id})
+}
+
 func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 
 	user, err := h.userStore.GetUserByID(c.Context(), id)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return c.JSON(map[string]string{"error": "not found"})
+		}
 		return err
 	}
 
