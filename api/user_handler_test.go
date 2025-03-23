@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http/httptest"
 	"testing"
@@ -87,6 +86,4 @@ func TestPostUser(t *testing.T) {
 	if user.Email != params.Email {
 		t.Errorf("expected email to be %s but got %s", params.Email, user.Email)
 	}
-
-	fmt.Println(user)
 }
