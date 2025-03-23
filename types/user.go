@@ -16,6 +16,11 @@ const (
 	minPasswordLen  = 7
 )
 
+type AuthParams struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type UpdateUserParams struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
