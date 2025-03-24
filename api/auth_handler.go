@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -22,6 +23,18 @@ func NewAuthHandler(userStore db.UserStore) *AuthHandler {
 	}
 }
 
+type genericResp struct {
+	Type string `json:"type"`
+	Msg  string `json:"msg"`
+}
+
+func invalidCredentials(c *fiber.Ctx) error {
+	return c.Status(http.StatusBadRequest).JSON(genericResp{
+		Type: "error",
+		Msg:  "invalid credentials",
+	})
+}
+
 func (h *AuthHandler) HandleAuthenticate(c *fiber.Ctx) error {
 	var authParams types.AuthParams
 	if err := c.BodyParser(&authParams); err != nil {
@@ -31,13 +44,13 @@ func (h *AuthHandler) HandleAuthenticate(c *fiber.Ctx) error {
 	user, err := h.userStore.GetUserByEmail(c.Context(), authParams.Email)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return fmt.Errorf("invalid credentials")
+			return invalidCredentials(c)
 		}
 		return err
 	}
 
 	if !types.IsValidPassword(user.EncryptedPassword, authParams.Password) {
-		return fmt.Errorf("invalid credentials")
+		return invalidCredentials(c)
 	}
 
 	resp := types.AuthResponse{
