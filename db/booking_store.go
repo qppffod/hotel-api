@@ -11,7 +11,9 @@ import (
 
 type BookingStore interface {
 	InsertBooking(context.Context, *types.Booking) (*types.Booking, error)
-	GetBookings(context.Context, *types.BookRoomParams, string) ([]*types.Booking, error)
+	GetAvailableBookings(context.Context, *types.BookRoomParams, string) ([]*types.Booking, error)
+	GetBookings(context.Context) ([]*types.Booking, error)
+	GetBookingByID(context.Context, string) (*types.Booking, error)
 }
 
 type MongoBookingStore struct {
@@ -26,7 +28,35 @@ func NewMongoBookingStore(client *mongo.Client, dbname string) *MongoBookingStor
 	}
 }
 
-func (s *MongoBookingStore) GetBookings(ctx context.Context, params *types.BookRoomParams, id string) ([]*types.Booking, error) {
+func (s *MongoBookingStore) GetBookingByID(ctx context.Context, id string) (*types.Booking, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var booking types.Booking
+	if err := s.coll.FindOne(ctx, bson.M{"_id": oid}).Decode(&booking); err != nil {
+		return nil, err
+	}
+
+	return &booking, nil
+}
+
+func (s *MongoBookingStore) GetBookings(ctx context.Context) ([]*types.Booking, error) {
+	cur, err := s.coll.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	var booking []*types.Booking
+	if err := cur.All(ctx, &booking); err != nil {
+		return nil, err
+	}
+
+	return booking, nil
+}
+
+func (s *MongoBookingStore) GetAvailableBookings(ctx context.Context, params *types.BookRoomParams, id string) ([]*types.Booking, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err

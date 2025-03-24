@@ -26,6 +26,7 @@ func (h *RoomHandler) HandleGetRooms(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+
 	return c.JSON(rooms)
 }
 
@@ -80,7 +81,7 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 }
 
 func (h *RoomHandler) isRoomAvailableForBooking(ctx context.Context, params *types.BookRoomParams, id string) (bool, error) {
-	bookings, err := h.store.Booking.GetBookings(ctx, params, id)
+	bookings, err := h.store.Booking.GetAvailableBookings(ctx, params, id)
 	if err != nil {
 		return false, err
 	}
