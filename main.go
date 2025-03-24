@@ -30,23 +30,26 @@ func main() {
 
 	var (
 		// stores
-		userStore  = db.NewMongoUserStore(client, db.DBNAME)
-		hotelStore = db.NewMongoHotelStore(client, db.DBNAME)
-		roomStore  = db.NewMongoRoomStore(client, hotelStore, db.DBNAME)
-		store      = &db.Store{
-			User:  userStore,
-			Hotel: hotelStore,
-			Room:  roomStore,
+		userStore    = db.NewMongoUserStore(client, db.DBNAME)
+		hotelStore   = db.NewMongoHotelStore(client, db.DBNAME)
+		roomStore    = db.NewMongoRoomStore(client, hotelStore, db.DBNAME)
+		bookingStore = db.NewMongoBookingStore(client, db.DBNAME)
+		store        = &db.Store{
+			User:    userStore,
+			Hotel:   hotelStore,
+			Room:    roomStore,
+			Booking: bookingStore,
 		}
 
 		// handlers
 		userHandler  = api.NewUserHandler(userStore)
 		hotelHandler = api.NewHotelHandler(store)
 		authHandler  = api.NewAuthHandler(userStore)
+		roomHandler  = api.NewRoomHandler(store)
 
 		app   = fiber.New(config)
 		auth  = app.Group("/api")
-		apiv1 = app.Group("/api/v1", middleware.JWTAuthentication)
+		apiv1 = app.Group("/api/v1", middleware.JWTAuthentication(userStore))
 	)
 
 	// auth handlers
@@ -64,6 +67,10 @@ func main() {
 	apiv1.Get("/hotel", hotelHandler.HandleGetHotels)
 	apiv1.Get("/hotel/:id", hotelHandler.HandleGetHotel)
 	apiv1.Get("/hotel/:id/room", hotelHandler.HandleGetHotelRooms)
+
+	// booking
+	apiv1.Get("/room", roomHandler.HandleGetRooms)
+	apiv1.Post("/room/:id/book", roomHandler.HandleBookRoom)
 
 	app.Listen(*listenAddr)
 }
