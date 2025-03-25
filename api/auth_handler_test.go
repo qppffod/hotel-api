@@ -2,7 +2,6 @@ package api
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,41 +10,23 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/qppffod/hotel-api/db"
+	"github.com/qppffod/hotel-api/db/fixtures"
 	"github.com/qppffod/hotel-api/types"
 )
-
-func insertTestUser(t *testing.T, userStore db.UserStore) *types.User {
-	user, err := types.NewUserFromParams(types.CreateUserParams{
-		FirstName: "first",
-		LastName:  "second",
-		Email:     "firstsecond@gmail.com",
-		Password:  "supersecurepassword",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	_, err = userStore.InsertUser(context.TODO(), user)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return user
-}
 
 func TestAuthenticateSuccess(t *testing.T) {
 	tdb := setup(t)
 	defer tdb.teardown(t)
-	insertedUser := insertTestUser(t, tdb.UserStore)
+	// insertedUser := insertTestUser(t, tdb.Store.User)
+	insertedUser := fixtures.AddUser(tdb.Store, "first", "second", false)
 
 	app := fiber.New()
-	authHandler := NewAuthHandler(tdb.UserStore)
+	authHandler := NewAuthHandler(tdb.Store.User)
 	app.Post("/auth", authHandler.HandleAuthenticate)
 
 	params := types.AuthParams{
-		Email:    "firstsecond@gmail.com",
-		Password: "supersecurepassword",
+		Email:    "first@second.com",
+		Password: "first_second",
 	}
 	b, _ := json.Marshal(params)
 
@@ -80,15 +61,15 @@ func TestAuthenticateSuccess(t *testing.T) {
 func TestAuthenticateWithWrongPassword(t *testing.T) {
 	tdb := setup(t)
 	defer tdb.teardown(t)
-	insertTestUser(t, tdb.UserStore)
+	fixtures.AddUser(tdb.Store, "first", "second", false)
 
 	app := fiber.New()
-	authHandler := NewAuthHandler(tdb.UserStore)
+	authHandler := NewAuthHandler(tdb.Store.User)
 	app.Post("/auth", authHandler.HandleAuthenticate)
 
 	params := types.AuthParams{
-		Email:    "firstsecond@gmail.com",
-		Password: "supersecurepasswordwrong",
+		Email:    "first@second.com",
+		Password: "wrongpassword",
 	}
 	b, _ := json.Marshal(params)
 
