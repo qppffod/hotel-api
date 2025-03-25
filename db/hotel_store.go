@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/qppffod/hotel-api/types"
+	"github.com/qppffod/hotel-api/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -31,7 +32,7 @@ func NewMongoHotelStore(client *mongo.Client, dbname string) *MongoHotelStore {
 func (s *MongoHotelStore) GetHotelByID(ctx context.Context, id string) (*types.Hotel, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, err
+		return nil, utils.ErrInvalidID()
 	}
 
 	var hotel types.Hotel

@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/qppffod/hotel-api/db"
 	"github.com/qppffod/hotel-api/types"
+	"github.com/qppffod/hotel-api/utils"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -26,7 +27,7 @@ func (h *UserHandler) HandlePutUser(c *fiber.Ctx) error {
 	)
 
 	if err := c.BodyParser(&params); err != nil {
-		return err
+		return utils.ErrBadRequest()
 	}
 
 	if err := h.userStore.UpdateUser(c.Context(), id, &params); err != nil {
@@ -63,7 +64,7 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
 	users, err := h.userStore.GetUsers(c.Context())
 	if err != nil {
-		return err
+		return utils.ErrResourceNotFound("user")
 	}
 
 	return c.JSON(users)
@@ -72,7 +73,7 @@ func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
 func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 	var params types.CreateUserParams
 	if err := c.BodyParser(&params); err != nil {
-		return err
+		return utils.ErrBadRequest()
 	}
 
 	if errors := params.Validate(); len(errors) > 0 {

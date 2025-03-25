@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/qppffod/hotel-api/types"
+	"github.com/qppffod/hotel-api/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -54,7 +55,7 @@ func (s *MongoUserStore) GetUserByEmail(ctx context.Context, email string) (*typ
 func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, params *types.UpdateUserParams) error {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return utils.ErrInvalidID()
 	}
 
 	filter := bson.M{"_id": oid}
@@ -73,7 +74,7 @@ func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, params *type
 func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return utils.ErrInvalidID()
 	}
 
 	_, err = s.coll.DeleteOne(ctx, bson.M{"_id": oid})
@@ -112,7 +113,7 @@ func (s *MongoUserStore) GetUsers(ctx context.Context) ([]*types.User, error) {
 func (s *MongoUserStore) GetUserByID(ctx context.Context, id string) (*types.User, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, err
+		return nil, utils.ErrInvalidID()
 	}
 
 	var user types.User

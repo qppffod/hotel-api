@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/qppffod/hotel-api/db"
+	"github.com/qppffod/hotel-api/utils"
 )
 
 type HotelHandler struct {
@@ -20,7 +21,7 @@ func (h *HotelHandler) HandleGetHotel(c *fiber.Ctx) error {
 
 	hotel, err := h.store.Hotel.GetHotelByID(c.Context(), id)
 	if err != nil {
-		return err
+		return utils.ErrResourceNotFound("hotel")
 	}
 
 	return c.JSON(hotel)
@@ -31,7 +32,7 @@ func (h *HotelHandler) HandleGetHotelRooms(c *fiber.Ctx) error {
 
 	rooms, err := h.store.Room.GetRoomsByHotelID(c.Context(), id)
 	if err != nil {
-		return err
+		return utils.ErrResourceNotFound("hotel rooms")
 	}
 
 	return c.JSON(rooms)
@@ -40,7 +41,7 @@ func (h *HotelHandler) HandleGetHotelRooms(c *fiber.Ctx) error {
 func (h *HotelHandler) HandleGetHotels(c *fiber.Ctx) error {
 	hotels, err := h.store.Hotel.GetHotels(c.Context())
 	if err != nil {
-		return err
+		return utils.ErrResourceNotFound("hotels")
 	}
 
 	return c.JSON(hotels)

@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/qppffod/hotel-api/db"
 	"github.com/qppffod/hotel-api/types"
+	"github.com/qppffod/hotel-api/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -42,7 +43,7 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 
 	roomID, err := primitive.ObjectIDFromHex(c.Params("id"))
 	if err != nil {
-		return err
+		return utils.ErrInvalidID()
 	}
 
 	user, ok := c.Context().UserValue("user").(*types.User)
@@ -83,7 +84,7 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 func (h *RoomHandler) isRoomAvailableForBooking(ctx context.Context, params *types.BookRoomParams, id string) (bool, error) {
 	bookings, err := h.store.Booking.GetAvailableBookings(ctx, params, id)
 	if err != nil {
-		return false, err
+		return false, utils.ErrResourceNotFound("available bookings")
 	}
 
 	ok := len(bookings) == 0

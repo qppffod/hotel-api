@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/qppffod/hotel-api/types"
+	"github.com/qppffod/hotel-api/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -32,7 +33,7 @@ func NewMongoBookingStore(client *mongo.Client, dbname string) *MongoBookingStor
 func (s *MongoBookingStore) UpdateBooking(ctx context.Context, id string) error {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return utils.ErrInvalidID()
 	}
 
 	update := bson.M{"$set": bson.M{"canceled": true}}
@@ -44,7 +45,7 @@ func (s *MongoBookingStore) UpdateBooking(ctx context.Context, id string) error 
 func (s *MongoBookingStore) GetBookingByID(ctx context.Context, id string) (*types.Booking, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, err
+		return nil, utils.ErrInvalidID()
 	}
 
 	var booking types.Booking
@@ -72,7 +73,7 @@ func (s *MongoBookingStore) GetBookings(ctx context.Context) ([]*types.Booking, 
 func (s *MongoBookingStore) GetAvailableBookings(ctx context.Context, params *types.BookRoomParams, id string) ([]*types.Booking, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, err
+		return nil, utils.ErrInvalidID()
 	}
 
 	filter := bson.M{
